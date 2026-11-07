@@ -1,6 +1,7 @@
 import os
 import sqlite3
 import asyncio
+from aiohttp import web
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
 from aiogram.types import (
@@ -87,8 +88,19 @@ async def admin(c: CallbackQuery):
     await c.answer()
 
 
+async def health(request):
+    return web.Response(text="ok")
+
+
 async def main():
+    app = web.Application()
+    app.router.add_get("/", health)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    port = int(os.environ.get("PORT", "10000"))
+    await web.TCPSite(runner, "0.0.0.0", port).start()
     await dp.start_polling(bot)
+
 
 
 if __name__ == "__main__":
